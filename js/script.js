@@ -16,22 +16,32 @@ function init() {
       }
     });
 }
+function findAll() {
+  fetch("http://10.0.0.168:8080/stores", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      console.log(data);
+      fillTable(data);
+      table.style.display = "initial";
+    });
+}
 function find() {
-  let inputString = document.getElementById("textFieldSearch").value;
-  console.log(inputString);
-  if (inputString.length >= 3) {
+  let inputString = document.getElementById("textFieldSearch");
+
+  if (inputString.value.length >= 3) {
     document.getElementById("loadingText").style.display = "initial";
 
-    fetch(
-      "http://localhost:8080/Tims_war/Search?input=" +
-        inputString.toLowerCase(),
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    )
+    fetch("http://10.0.0.168:8080/stores/" + inputString.value.toLowerCase(), {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         console.log(data);
@@ -40,44 +50,46 @@ function find() {
         table.style.display = "initial";
       });
   }
+  inputString.value = "";
 }
 function getDirectionLink(address) {
   const myArray = address.split(" ");
-  let url = "https://www.google.com/maps/search/";
+  let url = "https://www.google.com/maps/search/tims+";
   for (let i = 0; i < myArray.length; i++) {
     if (i != 0) {
       url += "+";
     }
     url += myArray[i];
   }
+  return url;
 }
-function fillTable(searchResult) {
+function fillTable(json) {
   console.log("Entered fillTable method!");
   const tbody = document.querySelector("tbody");
   tbody.innerHTML = "";
-
-  searchResult.forEach((obj) => {
-    const json = JSON.parse(obj);
-    const jsonID = JSON.parse(JSON.stringify(json["_id"]));
-    console.log(jsonID[0]);
+  json.forEach((obj) => {
     tbody.innerHTML +=
       '<tr class="table-row" id="' +
-      jsonID[0] +
+      obj["id"] +
       '">' +
       "<td>" +
-      json["name"] +
+      obj["name"] +
       "</td>" +
       "<td>" +
-      json["city"] +
+      obj["city"] +
       "</td>" +
+      "<td><a href='" +
+      getDirectionLink(obj["address"]) +
+      "'>" +
+      obj["address"] +
+      "</a></td>" +
       "<td>" +
-      json["address"] +
-      "</td>" +
-      "<td>" +
-      json["rating"] +
+      obj["rating"] +
       "</td>" +
       "</tr>";
+    console.log(getDirectionLink(obj["address"]));
   });
+
   document.querySelectorAll(".table-row").forEach((elem) =>
     elem.addEventListener("click", function () {
       console.log(this.id);
